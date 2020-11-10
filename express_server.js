@@ -49,18 +49,24 @@ const generateRandomString = function() {
   return Math.random().toString(36).substring(2, 8);
 };
 
+// delete a url
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  console.log(urlDatabase);
+  
+})
 
-// Response can contain HTML text too
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-app.get("/set", (req, res) => {
-  const a = 1;
-  res.send(`a = ${a}`);
- });
- app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
- });
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
+// app.get("/set", (req, res) => {
+//   const a = 1;
+//   res.send(`a = ${a}`);
+//  });
+//  app.get("/fetch", (req, res) => {
+//   res.send(`a = ${a}`);
+//  });
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+ console.log(`Example app listening on port ${PORT}!`);
 });
