@@ -40,16 +40,14 @@ app.post('/urls', (req, res) => {
   urlDatabase[short] = long;
   res.redirect(`urls/${short}`); // when user posts request by sending long url, it redirects to urls/:short
 });
-
-
+// redirects to the longURL
+app.get("/u/:shortURL", (req, res) => {
+  const longURL = urlDatabase[req.params.shortURL];
+  res.redirect(longURL);
+});
 const generateRandomString = function() {
   return Math.random().toString(36).substring(2, 8);
 };
-
-
-
-
-
 
 
 // Response can contain HTML text too
