@@ -6,7 +6,9 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
-
+//bodyParser is used to convert the buffer data into string server received in POST request from Browser
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
