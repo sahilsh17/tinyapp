@@ -28,8 +28,9 @@ app.get("/urls.json", (req, res) => {
 });
 // added a route for /urls
 app.get("/urls", (req, res) => {
+  const uid = req.cookies["user_id"];
   const templateVars = {
-    username: req.cookies["username"],
+    user: users[uid],
     urls: urlDatabase};
     
    
@@ -43,8 +44,9 @@ app.get('/urls/new', (req, res) => {
 
 // added route for short URLS
 app.get("/urls/:shortURL", (req, res) => {
+  const uid = req.cookies["user_id"];
   const templateVars = { 
-    username: req.cookies["username"],
+    user: users[uid],
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] };
  
@@ -106,6 +108,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  
   const id = randomIDgenerator();
 
   users[id.toString()] = {id, email, password};
