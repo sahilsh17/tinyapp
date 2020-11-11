@@ -12,6 +12,11 @@ const users = {
     email: 'a@a.com',
     password: '1234'
   },
+  '2' : {
+    id: '2',
+    email: 'c@c.com',
+    password: '5678'
+  }
   
 }
 const cookieParser = require("cookie-parser");
@@ -106,9 +111,15 @@ app.get('/register', (req, res) => {
 });
 // route for post /register
 app.post('/register', (req, res) => {
+
   const email = req.body.email;
   const password = req.body.password;
-  
+  if (!email || !password) {
+    res.status('404').send("Please enter a valid email or password");
+  }
+  if (emailLooker(email)) {
+    res.status('400').send("The email is already registered, Please enter a valid email");
+  }
   const id = randomIDgenerator();
 
   users[id.toString()] = {id, email, password};
@@ -120,8 +131,16 @@ const randomIDgenerator = function() {
   const k = Object.keys(users);
   return k.length + 1;
 };
-
-
+//looks if user object already has an email
+const emailLooker = function(email) {
+  for(let user in users) {
+    if(user.email === email) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
 
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
