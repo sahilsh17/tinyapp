@@ -6,9 +6,11 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const cookieParser = require("cookie-parser");
 //bodyParser is used to convert the buffer data into string server received in POST request from Browser
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -18,7 +20,12 @@ app.get("/urls.json", (req, res) => {
 });
 // added a route for /urls
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  const templateVars = {
+    username: req.cookies["username"],
+    urls: urlDatabase};
+    
+   
+  
   res.render('urls_index', templateVars);
 });
 // route rendered for new URLs
@@ -28,11 +35,15 @@ app.get('/urls/new', (req, res) => {
 
 // added route for short URLS
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { 
+    username: req.cookies["username"],
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL] };
+ 
   res.render("urls_show", templateVars);
 });
 
-app.post('/urls', (req, res) => {
+app.post('/urls/new', (req, res) => {
   console.log(req.body);
   
   const short = generateRandomString();
@@ -52,11 +63,32 @@ const generateRandomString = function() {
 // delete a url
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  console.log(urlDatabase);
   
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+  
+});
+//for editing the long URL
+app.post("/urls/:shortURL", (req, res) => {
+  const long = req.body['longURL'];
+  
+  const short = req.params.shortURL;
+  urlDatabase[short] = long;
+  
+ 
+  res.redirect("urls_show");
 })
-
+//added a POST route to /login
+app.post("/login", (req, res) => {
+  const user = req.body['username'];
+  res.cookie('username', user);
+  res.redirect('/urls');
+});
+// for logging out user
+app.post('/logout', (req, res) => {
+  res.clearCookie('username');
+  res.redirect('/urls');
+})
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
