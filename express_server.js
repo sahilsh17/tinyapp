@@ -6,6 +6,14 @@ const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const users = {
+  '1' : {
+    id: '1',
+    email: 'a@a.com',
+    password: '1234'
+  },
+  
+}
 const cookieParser = require("cookie-parser");
 //bodyParser is used to convert the buffer data into string server received in POST request from Browser
 const bodyParser = require("body-parser");
@@ -89,6 +97,11 @@ app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls');
 })
+
+// for get /register endpoint
+app.get('/register', (req, res) => {
+  res.render('urls_register');
+});
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
