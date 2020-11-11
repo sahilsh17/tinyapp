@@ -39,7 +39,7 @@ app.get("/urls", (req, res) => {
     templateVars = {
       email: "",
       urls: urlDatabase};
-    res.render('urls_index', templateVars);
+   return res.render('urls_index', templateVars);
   }
     templateVars = {
     email: users[uid].email,
@@ -47,22 +47,43 @@ app.get("/urls", (req, res) => {
     
    
   
-    res.render('urls_index', templateVars);
+  return  res.render('urls_index', templateVars);
 });
 // route rendered for new URLs
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const uid = req.cookies["user_id"];
+  let templateVars;
+  if(!uid) {
+    templateVars = {
+      email :""
+      
+    };
+   return res.render('urls_new',templateVars);
+  }
+  templateVars = {
+    email: users[uid].email
+    
+  };
+  return res.render('urls_new',templateVars);
 });
 
 // added route for short URLS
 app.get("/urls/:shortURL", (req, res) => {
   const uid = req.cookies["user_id"];
-  const templateVars = { 
+  let templateVars;
+  if(!uid) {
+    templateVars = { 
+      email: "",
+      shortURL: req.params.shortURL, 
+      longURL: urlDatabase[req.params.shortURL] };
+      return res.render("urls_show", templateVars);
+  }
+  templateVars = { 
     email: users[uid].email,
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] };
  
-  res.render("urls_show", templateVars);
+ return res.render("urls_show", templateVars);
 });
 
 app.post('/urls/new', (req, res) => {
@@ -107,13 +128,23 @@ app.get('/login', (req, res) => {
 });
 //added a POST route to /login
 app.post("/login", (req, res) => {
-  const user = req.body['username'];
-  res.cookie('username', user);
-  res.redirect('/urls');
+  const email = req.body['email'];
+  const password = req.body['password'];
+  if(emailLooker(email)) {
+    for (let user in users) {
+      if (users[user].password === password) {
+        res.cookie('user_id',user);
+       return res.redirect('/urls');
+      }
+    }
+  }
+  return res.status(403).send("The email or password is incorrect");
+
+  
 });
 // for logging out user
 app.post('/logout', (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 })
 
