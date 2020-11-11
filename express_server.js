@@ -34,13 +34,20 @@ app.get("/urls.json", (req, res) => {
 // added a route for /urls
 app.get("/urls", (req, res) => {
   const uid = req.cookies["user_id"];
-  const templateVars = {
-    user: users[uid],
+  let templateVars;
+  if(!uid) {
+    templateVars = {
+      email: "",
+      urls: urlDatabase};
+    res.render('urls_index', templateVars);
+  }
+    templateVars = {
+    email: users[uid].email,
     urls: urlDatabase};
     
    
   
-  res.render('urls_index', templateVars);
+    res.render('urls_index', templateVars);
 });
 // route rendered for new URLs
 app.get('/urls/new', (req, res) => {
@@ -51,7 +58,7 @@ app.get('/urls/new', (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const uid = req.cookies["user_id"];
   const templateVars = { 
-    user: users[uid],
+    email: users[uid].email,
     shortURL: req.params.shortURL, 
     longURL: urlDatabase[req.params.shortURL] };
  
@@ -92,7 +99,12 @@ app.post("/urls/:shortURL", (req, res) => {
   
  
   res.redirect("urls_show");
-})
+});
+
+//route to GET /login page
+app.get('/login', (req, res) => {
+  res.render('urls_login');
+});
 //added a POST route to /login
 app.post("/login", (req, res) => {
   const user = req.body['username'];
@@ -115,10 +127,10 @@ app.post('/register', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
-    res.status('404').send("Please enter a valid email or password");
+    return res.status('404').send("Please enter a valid email or password");
   }
   if (emailLooker(email)) {
-    res.status('400').send("The email is already registered, Please enter a valid email");
+    return res.status('400').send("The email is already registered, Please enter a valid email");
   }
   const id = randomIDgenerator();
 
@@ -134,7 +146,7 @@ const randomIDgenerator = function() {
 //looks if user object already has an email
 const emailLooker = function(email) {
   for(let user in users) {
-    if(user.email === email) {
+    if(users[user].email === email) {
       return true;
     } else {
       return false;
