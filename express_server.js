@@ -102,6 +102,24 @@ app.post('/logout', (req, res) => {
 app.get('/register', (req, res) => {
   res.render('urls_register');
 });
+// route for post /register
+app.post('/register', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  const id = randomIDgenerator();
+
+  users[id.toString()] = {id, email, password};
+  res.cookie('user_id', id);
+  res.redirect('/urls');
+});
+
+const randomIDgenerator = function() {
+  const k = Object.keys(users);
+  return k.length + 1;
+};
+
+
+
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
