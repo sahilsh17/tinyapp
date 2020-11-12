@@ -3,6 +3,8 @@ const app = express();
 const bcrypt = require('bcrypt');
 const cookieSession = require('cookie-session');
 const PORT = 8080; // default port 8080
+const {getUserByEmail} = require('./helper');
+
 app.set("view engine","ejs");
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", user_id: '9dgwzx'},
@@ -96,9 +98,10 @@ app.post('/urls/new', (req, res) => {
   
   
   const short = generateRandomString();
-  const long = req.body['longURL'];
-  urlDatabase[short] = long;
-  res.redirect(`urls/${short}`); // when user posts request by sending long url, it redirects to urls/:short
+  const longURL = req.body['longURL'];
+  const user_id = req.session.user_id;
+  urlDatabase[short]= {longURL, user_id};
+  res.redirect(`/urls/${short}`); // when user posts request by sending long url, it redirects to urls/:short
 });
 // redirects to the longURL
 app.get("/u/:shortURL", (req, res) => {
@@ -141,10 +144,10 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   
-  if(emailLooker(email)) {
+  if(getUserByEmail(email, users)) {
     for (let user in users) {
       if (bcrypt.compareSync(password,users[user].hashPassword)) {
-        res.req.session.user_id = user;
+        req.session.user_id = user;
        return res.redirect('/urls');
       }
     }
@@ -172,27 +175,19 @@ app.post('/register', (req, res) => {
   if (!email || !password) {
     return res.status('404').send("Please enter a valid email or password");
   }
-  if (emailLooker(email)) {
+  if (getUserByEmail(email, users)) {
     return res.status('400').send("The email is already registered, Please enter a valid email");
   }
   const id = generateRandomString();
 
-  users[id.toString()] = {id, email, hashPassword};
-  console.log(users);
+  users[id] = {id, email, hashPassword};
+  
   req.session.user_id = id;
   res.redirect('/urls');
 });
 
 
-//looks if user object already has an email
-const emailLooker = function(email) {
-  for(let user in users) {
-    if(users[user].email === email) {
-      return true;
-    } 
-  }
-  return false;
-}
+
 // function that returns urls for the logged in user
 const urlsForUser = function(id) {
   let a = [];
@@ -206,16 +201,6 @@ const urlsForUser = function(id) {
   return a;
 }
 
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
-// app.get("/set", (req, res) => {
-//   const a = 1;
-//   res.send(`a = ${a}`);
-//  });
-//  app.get("/fetch", (req, res) => {
-//   res.send(`a = ${a}`);
-//  });
 app.listen(PORT, () => {
- console.log(`Example app listening on port ${PORT}!`);
+ console.log(`App listening on port ${PORT}!`);
 });
