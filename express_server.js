@@ -3,17 +3,17 @@ const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", user_id: 'a2h6sb'},
+  "9sm5xK": {longURL: "http://www.google.com" , user_id: '2y1s6h'}
 };
 const users = {
-  '1' : {
-    id: '1',
+  'a2h6sb' : {
+    id: 'a2h6sb',
     email: 'a@a.com',
     password: '1234'
   },
-  '2' : {
-    id: '2',
+  '2y1s6h' : {
+    id: '2y1s6h',
     email: 'c@c.com',
     password: '5678'
   }
@@ -58,7 +58,7 @@ app.get('/urls/new', (req, res) => {
       email :""
       
     };
-   return res.render('urls_new',templateVars);
+   return res.render('urls_login',templateVars);
   }
   templateVars = {
     email: users[uid].email
@@ -75,13 +75,14 @@ app.get("/urls/:shortURL", (req, res) => {
     templateVars = { 
       email: "",
       shortURL: req.params.shortURL, 
-      longURL: urlDatabase[req.params.shortURL] };
+      longURL: urlDatabase[req.params.shortURL].longURL };
       return res.render("urls_show", templateVars);
   }
+ 
   templateVars = { 
     email: users[uid].email,
     shortURL: req.params.shortURL, 
-    longURL: urlDatabase[req.params.shortURL] };
+    longURL: urlDatabase[req.params.shortURL].longURL };
  
  return res.render("urls_show", templateVars);
 });
@@ -163,17 +164,14 @@ app.post('/register', (req, res) => {
   if (emailLooker(email)) {
     return res.status('400').send("The email is already registered, Please enter a valid email");
   }
-  const id = randomIDgenerator();
+  const id = generateRandomString();
 
   users[id.toString()] = {id, email, password};
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
 
-const randomIDgenerator = function() {
-  const k = Object.keys(users);
-  return k.length + 1;
-};
+
 //looks if user object already has an email
 const emailLooker = function(email) {
   for(let user in users) {
