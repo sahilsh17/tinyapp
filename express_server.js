@@ -4,7 +4,8 @@ const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 const urlDatabase = {
   "b2xVn2": {longURL: "http://www.lighthouselabs.ca", user_id: 'a2h6sb'},
-  "9sm5xK": {longURL: "http://www.google.com" , user_id: '2y1s6h'}
+  "9sm5xK": {longURL: "http://www.google.com" , user_id: '2y1s6h'},
+  "h4f6td": {longURL: 'http://www.example.com', user_id: '2y1s6h'}
 };
 const users = {
   'a2h6sb' : {
@@ -16,9 +17,14 @@ const users = {
     id: '2y1s6h',
     email: 'c@c.com',
     password: '5678'
+  },
+  'e73agy' : {
+    id : 'e73agy',
+    email : 'd@d.com',
+    password: '3456'
   }
   
-}
+};
 const cookieParser = require("cookie-parser");
 //bodyParser is used to convert the buffer data into string server received in POST request from Browser
 const bodyParser = require("body-parser");
@@ -34,16 +40,18 @@ app.get("/urls.json", (req, res) => {
 // added a route for /urls
 app.get("/urls", (req, res) => {
   const uid = req.cookies["user_id"];
+  const urlArray = urlsForUser(uid);
+  
   let templateVars;
   if(!uid) {
     templateVars = {
       email: "",
-      urls: urlDatabase};
+      urls: ""};
    return res.render('urls_index', templateVars);
   }
     templateVars = {
     email: users[uid].email,
-    urls: urlDatabase};
+    urls: urlArray};
     
    
   
@@ -71,6 +79,7 @@ app.get('/urls/new', (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const uid = req.cookies["user_id"];
   let templateVars;
+ 
   if(!uid) {
     templateVars = { 
       email: "",
@@ -88,7 +97,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post('/urls/new', (req, res) => {
-  console.log(req.body);
+  
   
   const short = generateRandomString();
   const long = req.body['longURL'];
@@ -114,13 +123,17 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 //for editing the long URL
 app.post("/urls/:shortURL", (req, res) => {
+  const uid = req.cookies['user_id'];
+  if(!uid) {
+    return res.status(403).send('Please Login to edit or Delete');
+  }
   const long = req.body['longURL'];
   
   const short = req.params.shortURL;
-  urlDatabase[short] = long;
-  
+  urlDatabase[short].longURL = long;
+  console.log(urlDatabase[short]);
  
-  res.redirect("urls_show");
+  res.redirect(`/urls/${short}`);
 });
 
 //route to GET /login page
@@ -129,8 +142,9 @@ app.get('/login', (req, res) => {
 });
 //added a POST route to /login
 app.post("/login", (req, res) => {
-  const email = req.body['email'];
-  const password = req.body['password'];
+  const email = req.body.email;
+  const password = req.body.password;
+  
   if(emailLooker(email)) {
     for (let user in users) {
       if (users[user].password === password) {
@@ -177,10 +191,21 @@ const emailLooker = function(email) {
   for(let user in users) {
     if(users[user].email === email) {
       return true;
-    } else {
-      return false;
+    } 
+  }
+  return false;
+}
+// function that returns urls for the logged in user
+const urlsForUser = function(id) {
+  let a = [];
+  let long;
+  for (let short in urlDatabase) {
+    if (urlDatabase[short].user_id === id) {
+      long = urlDatabase[short].longURL;
+      a.push({short, long});
     }
   }
+  return a;
 }
 
 // app.get("/hello", (req, res) => {
