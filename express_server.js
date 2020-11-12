@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session');
 const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 const urlDatabase = {
@@ -16,6 +17,10 @@ const users = {
   
   
 };
+app.use(cookieSession({
+  name: 'session',
+  keys: ['1','2']
+}));
 const cookieParser = require("cookie-parser");
 //bodyParser is used to convert the buffer data into string server received in POST request from Browser
 const bodyParser = require("body-parser");
@@ -30,7 +35,7 @@ app.get("/urls.json", (req, res) => {
 });
 // added a route for /urls
 app.get("/urls", (req, res) => {
-  const uid = req.cookies["user_id"];
+  const uid = req.session.user_id;
   const urlArray = urlsForUser(uid);
   
   let templateVars;
@@ -50,7 +55,7 @@ app.get("/urls", (req, res) => {
 });
 // route rendered for new URLs
 app.get('/urls/new', (req, res) => {
-  const uid = req.cookies["user_id"];
+  const uid = req.session.user_id;
   let templateVars;
   if(!uid) {
     templateVars = {
@@ -68,7 +73,7 @@ app.get('/urls/new', (req, res) => {
 
 // added route for short URLS
 app.get("/urls/:shortURL", (req, res) => {
-  const uid = req.cookies["user_id"];
+  const uid = req.session.user_id;
   let templateVars;
  
   if(!uid) {
@@ -114,7 +119,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 //for editing the long URL
 app.post("/urls/:shortURL", (req, res) => {
-  const uid = req.cookies['user_id'];
+  const uid = req.session.user_id;
   if(!uid) {
     return res.status(403).send('Please Login to edit or Delete');
   }
@@ -139,7 +144,7 @@ app.post("/login", (req, res) => {
   if(emailLooker(email)) {
     for (let user in users) {
       if (bcrypt.compareSync(password,users[user].hashPassword)) {
-        res.cookie('user_id',user);
+        res.req.session.user_id = user;
        return res.redirect('/urls');
       }
     }
@@ -150,7 +155,7 @@ app.post("/login", (req, res) => {
 });
 // for logging out user
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null
   res.redirect('/urls');
 })
 
@@ -174,7 +179,7 @@ app.post('/register', (req, res) => {
 
   users[id.toString()] = {id, email, hashPassword};
   console.log(users);
-  res.cookie('user_id', id);
+  req.session.user_id = id;
   res.redirect('/urls');
 });
 
