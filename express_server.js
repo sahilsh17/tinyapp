@@ -1,28 +1,19 @@
 const express = require("express");
 const app = express();
+const bcrypt = require('bcrypt');
 const PORT = 8080; // default port 8080
 app.set("view engine","ejs");
 const urlDatabase = {
-  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", user_id: 'a2h6sb'},
-  "9sm5xK": {longURL: "http://www.google.com" , user_id: '2y1s6h'},
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca", user_id: '9dgwzx'},
+  "9sm5xK": {longURL: "http://www.google.com" , user_id: '9dgwzx'},
   "h4f6td": {longURL: 'http://www.example.com', user_id: '2y1s6h'}
 };
 const users = {
-  'a2h6sb' : {
-    id: 'a2h6sb',
-    email: 'a@a.com',
-    password: '1234'
-  },
-  '2y1s6h' : {
-    id: '2y1s6h',
-    email: 'c@c.com',
-    password: '5678'
-  },
-  'e73agy' : {
-    id : 'e73agy',
-    email : 'd@d.com',
-    password: '3456'
-  }
+  '9dgwzx': 
+   { id: '9dgwzx',
+     email: 'b@b.com',
+     hashPassword: '$2b$10$HoRuEfjVc6yVYW6BUceTfeZyAtyI4oe1SwHR5l3o/9BUII2cK..BK' } 
+  
   
 };
 const cookieParser = require("cookie-parser");
@@ -147,7 +138,7 @@ app.post("/login", (req, res) => {
   
   if(emailLooker(email)) {
     for (let user in users) {
-      if (users[user].password === password) {
+      if (bcrypt.compareSync(password,users[user].hashPassword)) {
         res.cookie('user_id',user);
        return res.redirect('/urls');
       }
@@ -172,6 +163,7 @@ app.post('/register', (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
+  const hashPassword = bcrypt.hashSync(password,10);
   if (!email || !password) {
     return res.status('404').send("Please enter a valid email or password");
   }
@@ -180,7 +172,8 @@ app.post('/register', (req, res) => {
   }
   const id = generateRandomString();
 
-  users[id.toString()] = {id, email, password};
+  users[id.toString()] = {id, email, hashPassword};
+  console.log(users);
   res.cookie('user_id', id);
   res.redirect('/urls');
 });
