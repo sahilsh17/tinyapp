@@ -12,7 +12,9 @@
     </div>
     <div >
       <% if(email) {%> 
-        <h5> Logged in as <%=email%></h5>
+        <div class="navbar-nav"></div>
+        <p>Logged in as <%=email%></p>
+      </div>
         <form action="/logout" method="POST">
           
           <button type="submit" class="btn btn-primary">Logout</button>
@@ -20,9 +22,10 @@
         </form>
           <% }%>
       <% if(!email) {%>
-          <a href="/login">Login</a>
-          <a href="/register">Register</a>  
-            
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="/login">Login</a>
+          <a class="nav-item nav-link" href="/register">Register</a>  
+        </div>
           </form>
             <% }%>
   
