@@ -26,12 +26,15 @@ app.use(cookieSession({
   name: 'session',
   keys: ['1','2']
 }));
+// required cookieParser 
 const cookieParser = require("cookie-parser");
+
 //bodyParser is used to convert the buffer data into string server received in POST request from Browser
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
+// route for Get /
 app.get("/", (req, res) => {
   const uid = req.session.user_id;
   if (uid) {
@@ -39,10 +42,7 @@ app.get("/", (req, res) => {
   }
   return res.redirect('/login');
 });
-// retreiving URLS on the client side
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
+
 // added a route for /urls
 app.get("/urls", (req, res) => {
   const uid = req.session.user_id;
@@ -59,19 +59,18 @@ app.get("/urls", (req, res) => {
     email: users[uid].email,
     urls: urlArray};
     
-   
-  
   return  res.render('urls_index', templateVars);
 });
+
+//route for Post /urls
 app.post('/urls', (req, res) => {
-  
-  
   const short = generateRandomString();
   const longURL = req.body['longURL'];
   const user_id = req.session.user_id;
   urlDatabase[short] = {longURL, user_id};
   res.redirect(`/urls/${short}`); // when user posts request by sending long url, it redirects to urls/:short
 });
+
 // route rendered for new URLs
 app.get('/urls/new', (req, res) => {
   const uid = req.session.user_id;
@@ -89,7 +88,7 @@ app.get('/urls/new', (req, res) => {
   return res.render('urls_new',templateVars);
 });
 
-// added route for short URLS
+// route for get /urls/:shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const uid = req.session.user_id;
   let templateVars;
@@ -120,7 +119,8 @@ app.get("/urls/:shortURL", (req, res) => {
  
   return res.render("urls_show", templateVars);
 });
-//for editing the long URL
+
+// Route for post /urls/:shortURL
 app.post("/urls/:shortURL", (req, res) => {
   const uid = req.session.user_id;
   if (!uid) {
@@ -134,7 +134,8 @@ app.post("/urls/:shortURL", (req, res) => {
  
   res.redirect(`/urls/`);
 });
-// redirects to the longURL
+
+//route for get /u/:shortURL--> redirects to the longURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
@@ -149,13 +150,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   
   delete urlDatabase[shortURL];
   res.redirect("/urls");
-  
 });
 
 //route to GET /login page
 app.get('/login', (req, res) => {
   res.render('urls_login');
 });
+
 //added a POST route to /login
 app.post("/login", (req, res) => {
   const email = req.body.email;
@@ -170,20 +171,20 @@ app.post("/login", (req, res) => {
     }
   }
   return res.status(403).send("The email or password is incorrect");
-
-  
 });
-// for logging out user
+
+// Route for post /logout
 app.post('/logout', (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
 
-// for get /register endpoint
+// route for get /register endpoint
 app.get('/register', (req, res) => {
  
   res.render('urls_register');
 });
+
 // route for post /register
 app.post('/register', (req, res) => {
 
@@ -203,8 +204,6 @@ app.post('/register', (req, res) => {
   req.session.user_id = id;
   res.redirect('/urls');
 });
-
-
 
 // function that returns urls for the logged in user
 const urlsForUser = function(id) {
