@@ -16,7 +16,7 @@ describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
     const user = getUserByEmail("b@b.com", users);
     const expectedOutput = "9dgwzx";
-    // Write your assert statement here
+    
     
     assert.equal(user, expectedOutput);
   });
@@ -25,7 +25,7 @@ describe('getUserByEmail', function() {
   it('should return a undefined for non-existent email', function() {
     const user = getUserByEmail("d@d.com", users);
     const expectedOutput = undefined;
-    // Write your assert statement here
+    
     
     assert.equal(user, expectedOutput);
   });
